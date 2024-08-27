@@ -22,7 +22,7 @@
         </Card>
       </router-link>
     </div>
-
+    <div class="total-weight">Total Weight of Pokémon on this page: {{ totalWeight }}</div>
     <div class="pagination">
       <button
         v-for="page in totalPages"
@@ -38,12 +38,17 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia'
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { usePokemonStore } from '../stores/pokemonStore'
 
 const store = usePokemonStore()
 
 const { pokemons, totalPages, currentPage } = storeToRefs(store)
+
+// Calculate the total weight of the Pokémon on the current page
+const totalWeight = computed(() => {
+  return pokemons.value.reduce((total, pokemon) => total + pokemon.weight, 0)
+})
 
 onMounted(() => {
   store.fetchPokemons()
