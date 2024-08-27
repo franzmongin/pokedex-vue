@@ -1,9 +1,23 @@
 <template>
   <div class="pokedex">
     <h1>Pokédex</h1>
+
+    <div class="controls">
+      <div class="sort-by-control">
+        <label for="sort-by">Sort by:</label>
+        <select v-model="sortBy" id="sort-by">
+          <option value="name">Name</option>
+          <option value="id">ID</option>
+          <option value="type">Type</option>
+        </select>
+      </div>
+
+      <input v-model="searchQuery" type="text" placeholder="Search by name or type" />
+    </div>
+
     <div class="pokemon-grid">
       <router-link
-        v-for="pokemon in pokemons"
+        v-for="pokemon in filteredAndSortedPokemons"
         :key="pokemon.id"
         :to="{ name: 'PokemonDetails', params: { id: pokemon.id } }"
         class="pokemon-card"
@@ -38,16 +52,45 @@
 
 <script lang="ts" setup>
 import { storeToRefs } from 'pinia'
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { usePokemonStore } from '../stores/pokemonStore'
 
 const store = usePokemonStore()
 
 const { pokemons, totalPages, currentPage } = storeToRefs(store)
 
-// Calculate the total weight of the Pokémon on the current page
+// Sorting and searching state
+const sortBy = ref('id')
+const searchQuery = ref('')
+
 const totalWeight = computed(() => {
-  return pokemons.value.reduce((total, pokemon) => total + pokemon.weight, 0)
+  return filteredAndSortedPokemons.value.reduce((total, pokemon) => total + pokemon.weight, 0)
+})
+
+const filteredAndSortedPokemons = computed(() => {
+  let filteredPokemons = pokemons.value
+
+  // Filter by search query (name or type)
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    filteredPokemons = filteredPokemons.filter(
+      (pokemon) =>
+        pokemon.name.toLowerCase().includes(query) ||
+        pokemon.types.some((type) => type.toLowerCase().includes(query))
+    )
+  }
+
+  // Sort by the selected criteria
+  return [...filteredPokemons].sort((a, b) => {
+    if (sortBy.value === 'name') {
+      return a.name.localeCompare(b.name)
+    } else if (sortBy.value === 'id') {
+      return a.id - b.id
+    } else if (sortBy.value === 'type') {
+      return [...a.types].sort()[0].localeCompare([...b.types].sort()[0])
+    }
+    return 0
+  })
 })
 
 onMounted(() => {
@@ -162,5 +205,41 @@ h1 {
 
 .bold-text {
   font-weight: bold;
+}
+
+.total-weight {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+}
+
+.controls label {
+  margin-right: 0.5rem;
+}
+
+.controls input {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 200px;
+}
+
+.controls select {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 150px;
+}
+.controls .sort-by-control {
+  flex-wrap: nowrap;
 }
 </style>
