@@ -13,8 +13,11 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "pinia": "^2.1.7",
-    "vue": "^3.4.29"
+    "@primevue/themes": "^4.0.5",
+    "pinia": "^2.2.2",
+    "primevue": "^4.0.5",
+    "vue": "^3.4.29",
+    "vue-router": "4"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.8.0",
