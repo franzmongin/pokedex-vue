@@ -51,6 +51,7 @@
 </template>
 
 <script lang="ts" setup>
+import { type Pokemon } from '@/types/pokemon'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref } from 'vue'
 import { usePokemonStore } from '../stores/pokemonStore'
@@ -63,12 +64,25 @@ const { pokemons, totalPages, currentPage } = storeToRefs(store)
 const sortBy = ref('id')
 const searchQuery = ref('')
 
+const sortedPokemons = computed<Pokemon[]>(() => {
+  return [...pokemons.value].sort((a, b) => {
+    if (sortBy.value === 'name') {
+      return a.name.localeCompare(b.name)
+    } else if (sortBy.value === 'id') {
+      return a.id - b.id
+    } else if (sortBy.value === 'type') {
+      return [...a.types].sort()[0].localeCompare([...b.types].sort()[0])
+    }
+    return 0
+  })
+})
+
 const totalWeight = computed(() => {
   return filteredAndSortedPokemons.value.reduce((total, pokemon) => total + pokemon.weight, 0)
 })
 
 const filteredAndSortedPokemons = computed(() => {
-  let filteredPokemons = pokemons.value
+  let filteredPokemons = sortedPokemons.value
 
   // Filter by search query (name or type)
   if (searchQuery.value) {
@@ -79,18 +93,7 @@ const filteredAndSortedPokemons = computed(() => {
         pokemon.types.some((type) => type.toLowerCase().includes(query))
     )
   }
-
-  // Sort by the selected criteria
-  return [...filteredPokemons].sort((a, b) => {
-    if (sortBy.value === 'name') {
-      return a.name.localeCompare(b.name)
-    } else if (sortBy.value === 'id') {
-      return a.id - b.id
-    } else if (sortBy.value === 'type') {
-      return [...a.types].sort()[0].localeCompare([...b.types].sort()[0])
-    }
-    return 0
-  })
+  return filteredPokemons
 })
 
 onMounted(() => {
