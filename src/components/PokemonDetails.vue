@@ -47,7 +47,7 @@ const pokemon = ref<Pokemon>()
 const pokemonId = Number(route.params.id)
 
 const goBack = () => {
-  router.push({ name: 'Pokedex' }) // Navigate back to the main list of Pokémon
+  router.push({ name: 'PokedexHome' }) // Navigate back to the main list of Pokémon
 }
 
 onMounted(() => {
